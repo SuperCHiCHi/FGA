@@ -296,7 +296,11 @@ private fun MightyChainOrder(
         modifier = Modifier.padding(horizontal = 16.dp)
     )
 
-    if (npCards.size > 1 && knownNpTypes.distinct().size != knownNpTypes.size) {
+    if (
+        npCards.size > 1
+        && knownNpTypes.none { it == CardTypeEnum.Unknown }
+        && knownNpTypes.distinct().size != knownNpTypes.size
+    ) {
         Text(
             stringResource(R.string.p_mighty_chain_same_np_type_unavailable),
             style = MaterialTheme.typography.bodySmall,

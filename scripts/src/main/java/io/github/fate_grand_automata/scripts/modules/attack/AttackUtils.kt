@@ -8,9 +8,9 @@ import io.github.fate_grand_automata.scripts.models.ParsedCard
 import io.github.fate_grand_automata.scripts.models.toFieldSlot
 
 object AttackUtils {
-    fun getCardsPerFieldSlotMap (
+    fun getCardsPerFieldSlotMap(
         cards: List<ParsedCard>,
-        npUsage: NPUsage = NPUsage.none
+        npUsage: NPUsage = NPUsage.none,
     ): Map<FieldSlot, Int> {
         // Card list check
         val cardsPerFieldSlotMap: MutableMap<FieldSlot, Int> = mutableMapOf()
@@ -30,7 +30,7 @@ object AttackUtils {
         }
         return cardsPerFieldSlotMap.toMap()
     }
-    fun getCardsPerCardTypeMap (
+    fun getCardsPerCardTypeMap(
         cards: List<ParsedCard>,
         npTypes: Map<FieldSlot, CardTypeEnum> = emptyMap(),
     ): Map<CardTypeEnum, Int> {
@@ -49,20 +49,19 @@ object AttackUtils {
         return cardsPerCardTypeMap.toMap()
     }
 
-    fun getFieldSlotsWithValidBraveChain (
+    fun getFieldSlotsWithValidBraveChain(
         cards: List<ParsedCard>,
-        npUsage: NPUsage = NPUsage.none
+        npUsage: NPUsage = NPUsage.none,
     ): List<FieldSlot> {
         val cardsPerFieldSlotMap = getCardsPerFieldSlotMap(cards, npUsage)
         return getFieldSlotsWithValidBraveChain(cardsPerFieldSlotMap)
     }
 
-    fun getFieldSlotsWithValidBraveChain (
-        cardsPerFieldSlotMap: Map<FieldSlot, Int>
+    fun getFieldSlotsWithValidBraveChain(
+        cardsPerFieldSlotMap: Map<FieldSlot, Int>,
     ): List<FieldSlot> {
         return cardsPerFieldSlotMap.keys
             .filter { cardsPerFieldSlotMap.getOrElse(it) { 0 } >= 3 }
-            .map { it }
     }
 
     /**
@@ -76,7 +75,7 @@ object AttackUtils {
      * @param npUsage NPs that have been clicked
      * @returns A valid FieldSlot for a BraveChain or null if there is none
      */
-    fun getBraveChainFieldSlot (
+    fun getBraveChainFieldSlot(
         braveChainEnum: BraveChainEnum = BraveChainEnum.None,
         cards: List<ParsedCard>,
         npUsage: NPUsage = NPUsage.none,
@@ -102,8 +101,8 @@ object AttackUtils {
     /**
      * @returns A list of non-Unknown type cards that can be used to make a Chain.
      */
-    fun getValidNonUnknownCards (
-        cards: List<ParsedCard>
+    fun getValidNonUnknownCards(
+        cards: List<ParsedCard>,
     ): List<ParsedCard> {
         // Try to ensure unknown is handled
         return cards.filter { it.type != CardTypeEnum.Unknown }
@@ -112,7 +111,7 @@ object AttackUtils {
     /**
      * @returns Are there enough cards to make a chain?
      */
-    fun isChainable (
+    fun isChainable(
         cards: List<ParsedCard>,
         npUsage: NPUsage = NPUsage.none,
         npTypes: Map<FieldSlot, CardTypeEnum> = emptyMap(),

@@ -105,7 +105,6 @@ Skills"</string>
     <string name="p_mighty_chain_np">"NP"</string>
     <string name="p_mighty_chain_card">"Card"</string>
     <string name="p_mighty_chain_same_np_type_unavailable">"Mighty Chain unavailable with NPs of the same type"</string>
-    <string name="p_mighty_chain_turn">"Turn %1$d"</string>
     <string name="p_chain_type_quick">"Quick"</string>
     <string name="p_chain_type_arts">"Arts"</string>
     <string name="p_chain_type_buster">"Buster"</string>
