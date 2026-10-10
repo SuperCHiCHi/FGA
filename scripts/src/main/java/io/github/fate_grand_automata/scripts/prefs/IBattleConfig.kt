@@ -20,6 +20,7 @@ interface IBattleConfig {
     val braveChains: List<BraveChainEnum>
     val useMightyChain: Boolean
     val npCardTypes: List<CardTypeEnum>
+    val mightyChainOrders: List<List<CardTypeEnum>>
     val party: Int
     val materials: Set<MaterialEnum>
     val support: ISupportPreferences
