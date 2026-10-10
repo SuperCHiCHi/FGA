@@ -97,10 +97,11 @@ Skills"</string>
     <string name="p_battle_config_server">"Server"</string>
     <string name="p_battle_config_card_priority">"Card Priority"</string>
     <string name="p_battle_config_use_servant_priority">"Use Servant Priority"</string>
-    <string name="p_battle_config_use_mighty_chain">"Prioritize Mighty Chains"</string>
-    <string name="p_mighty_chain_np_types">"NP colors for Mighty Chains"</string>
-    <string name="p_mighty_chain_servant_np_type">"Servant %1$d NP color"</string>
-    <string name="p_mighty_chain_np_type_unknown">"Not set"</string>
+    <string name="p_battle_config_use_mighty_chain">"Use Mighty Chains"</string>
+    <string name="p_mighty_chain_np_types">"NP card types"</string>
+    <string name="p_mighty_chain_servant_np_type">"Servant %1$d NP card type"</string>
+    <string name="p_mighty_chain_servant_np">"Servant %1$d NP"</string>
+    <string name="p_mighty_chain_np_type_unknown">"Not set (use normal selection)"</string>
     <string name="p_mighty_chain_np">"NP"</string>
     <string name="p_mighty_chain_turn">"Turn %1$d"</string>
     <string name="p_chain_type_quick">"Quick"</string>
@@ -216,6 +217,7 @@ Copy or rename it if you want to keep it."</string>
     <string name="p_refill_type_sq">"SQ"</string>
     <string name="p_brave_chains_don_t_care">"Don't care"</string>
     <string name="p_brave_chains_with_np">"With NP"</string>
+    <string name="p_brave_chains_always">"Always"</string>
     <string name="p_brave_chains_avoid">"Avoid"</string>
     <string name="p_boost_item_disabled">"Disabled"</string>
     <string name="p_boost_item_skip">"Skip"</string>
