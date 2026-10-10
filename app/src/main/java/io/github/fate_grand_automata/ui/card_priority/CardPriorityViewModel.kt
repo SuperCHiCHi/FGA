@@ -10,8 +10,11 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.github.fate_grand_automata.prefs.core.PrefsCore
 import io.github.fate_grand_automata.scripts.enums.BraveChainEnum
+import io.github.fate_grand_automata.scripts.models.AutoSkillAction
+import io.github.fate_grand_automata.scripts.models.AutoSkillCommand
 import io.github.fate_grand_automata.scripts.models.CardPriority
 import io.github.fate_grand_automata.scripts.models.CardPriorityPerWave
+import io.github.fate_grand_automata.scripts.models.CommandCard
 import io.github.fate_grand_automata.scripts.models.ServantPriorityPerWave
 
 @HiltViewModel(assistedFactory = CardPriorityViewModel.Factory::class)
@@ -50,6 +53,16 @@ class CardPriorityViewModel @AssistedInject constructor(
     val useServantPriority = battleConfig.useServantPriority
     val useMightyChain = battleConfig.useMightyChain
     val npCardTypes = battleConfig.npCardTypes
+    val mightyChainTurns: List<List<Set<Int>>> = runCatching {
+        AutoSkillCommand.parse(battleConfig.skillCommand.get()).stages.map { turns ->
+            turns.map { actions ->
+                actions.filterIsInstance<AutoSkillAction.Atk>()
+                    .flatMap { it.nps }
+                    .mapNotNull { CommandCard.NP.list.indexOf(it).takeIf { index -> index >= 0 } }
+                    .toSet()
+            }
+        }
+    }.getOrDefault(emptyList())
 
     fun save() {
         battleConfig.cardPriority.set(
