@@ -97,6 +97,13 @@ Skills"</string>
     <string name="p_battle_config_server">"Server"</string>
     <string name="p_battle_config_card_priority">"Card Priority"</string>
     <string name="p_battle_config_use_servant_priority">"Use Servant Priority"</string>
+    <string name="p_battle_config_use_mighty_chain">"Prioritize Mighty Chains"</string>
+    <string name="p_mighty_chain_np_types">"NP colors for Mighty Chains"</string>
+    <string name="p_mighty_chain_servant_np_type">"Servant %1$d NP color"</string>
+    <string name="p_mighty_chain_np_type_unknown">"Not set"</string>
+    <string name="p_chain_type_quick">"Quick"</string>
+    <string name="p_chain_type_arts">"Arts"</string>
+    <string name="p_chain_type_buster">"Buster"</string>
     <string name="p_battle_config_support">"Support"</string>
     <string name="p_battle_config_support_selection_mode">"Selection Mode"</string>
     <string name="p_battle_config_support_fallback_selection_mode">"Fallback"</string>
