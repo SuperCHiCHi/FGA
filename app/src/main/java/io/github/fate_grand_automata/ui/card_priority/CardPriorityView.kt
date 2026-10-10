@@ -1,5 +1,6 @@
 package io.github.fate_grand_automata.ui.card_priority
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,13 +8,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,16 +27,17 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import io.github.fate_grand_automata.R
 import io.github.fate_grand_automata.prefs.core.Pref
 import io.github.fate_grand_automata.scripts.enums.CardTypeEnum
 import io.github.fate_grand_automata.ui.Heading
+import io.github.fate_grand_automata.ui.FGAListItemColors
+import io.github.fate_grand_automata.ui.drag_sort.DragSort
+import io.github.fate_grand_automata.ui.drag_sort.DragSortItemStyle
 import io.github.fate_grand_automata.ui.prefs.SwitchPreference
-import io.github.fate_grand_automata.ui.prefs.Preference
 import io.github.fate_grand_automata.ui.prefs.listDialog
 import io.github.fate_grand_automata.ui.prefs.remember
 import kotlinx.coroutines.launch
@@ -43,7 +48,8 @@ fun CardPriorityView(
     useServantPriority: Pref<Boolean>,
     useMightyChain: Pref<Boolean>,
     npCardTypes: Pref<List<CardTypeEnum>>,
-    mightyChainTurns: List<List<Set<Int>>>
+    mightyChainTurns: List<List<Set<Int>>>,
+    mightyChainOrders: List<SnapshotStateList<CardTypeEnum>>
 ) {
     val pagerState = rememberPagerState(pageCount = {items.size},)
     val scope = rememberCoroutineScope()
@@ -83,7 +89,13 @@ fun CardPriorityView(
             if (mightyChain) {
                 MightyChainSettings(
                     npCardTypes = npCardTypes,
-                    turns = mightyChainTurns.getOrNull(pagerState.currentPage).orEmpty()
+                    selectedNpSlots = mightyChainTurns
+                        .getOrNull(pagerState.currentPage)
+                        .orEmpty()
+                        .flatten()
+                        .distinct()
+                        .sorted(),
+                    order = mightyChainOrders.getOrNull(pagerState.currentPage)
                 )
                 HorizontalDivider()
             }
@@ -107,7 +119,8 @@ fun CardPriorityView(
                     }
 
                     items.getOrNull(it)?.Render(
-                        useServantPriority = servantPriority
+                        useServantPriority = servantPriority,
+                        useMightyChain = mightyChain
                     )
                 }
             }
@@ -118,7 +131,8 @@ fun CardPriorityView(
 @Composable
 private fun MightyChainSettings(
     npCardTypes: Pref<List<CardTypeEnum>>,
-    turns: List<Set<Int>>
+    selectedNpSlots: List<Int>,
+    order: SnapshotStateList<CardTypeEnum>?
 ) {
     var types by npCardTypes.remember()
     val entries = linkedMapOf(
@@ -128,88 +142,99 @@ private fun MightyChainSettings(
         CardTypeEnum.Unknown to stringResource(R.string.p_mighty_chain_np_type_unknown),
     )
 
-    val selectedSlots = turns.flatten().distinct().sorted()
-
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
-        Text(
-            text = stringResource(R.string.p_mighty_chain_np_types),
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
-        )
+        if (selectedNpSlots.isNotEmpty()) {
+            Text(
+                text = stringResource(R.string.p_mighty_chain_np_types),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
 
-        selectedSlots.forEach { index ->
-            val selected = types.getOrElse(index) { CardTypeEnum.Unknown }
-            val dialog = listDialog(
-                selected = selected,
-                onSelectedChange = { selectedType ->
-                    types = List(3) { slot ->
-                        if (slot == index) selectedType
-                        else types.getOrElse(slot) { CardTypeEnum.Unknown }
+            Card(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    selectedNpSlots.forEach { index ->
+                        val selected = types.getOrElse(index) { CardTypeEnum.Unknown }
+                        val dialog = listDialog(
+                            selected = selected,
+                            onSelectedChange = { selectedType ->
+                                types = List(3) { slot ->
+                                    if (slot == index) selectedType
+                                    else types.getOrElse(slot) { CardTypeEnum.Unknown }
+                                }
+                            },
+                            entries = entries,
+                            title = stringResource(R.string.p_mighty_chain_servant_np_type, index + 1)
+                        )
+
+                        ListItem(
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable { dialog.show() },
+                            headlineContent = {
+                                Text(stringResource(R.string.p_mighty_chain_servant_np, index + 1))
+                            },
+                            supportingContent = { Text(entries[selected].orEmpty()) },
+                            colors = FGAListItemColors()
+                        )
                     }
-                },
-                entries = entries,
-                title = stringResource(R.string.p_mighty_chain_servant_np_type, index + 1)
-            )
-
-            Preference(
-                title = stringResource(R.string.p_mighty_chain_servant_np_type, index + 1),
-                summary = entries[selected].orEmpty(),
-                onClick = { dialog.show() }
-            )
+                }
+            }
         }
 
-        turns.forEachIndexed { turnIndex, npSlots ->
-            MightyChainPreview(
-                turn = turnIndex + 1,
-                npSlots = npSlots,
-                types = types
+        if (order != null) {
+            MightyChainOrder(
+                order = order,
+                selectedNpSlots = selectedNpSlots,
+                npTypes = types
             )
         }
     }
 }
 
 @Composable
-private fun MightyChainPreview(
-    turn: Int,
-    npSlots: Set<Int>,
-    types: List<CardTypeEnum>
+private fun MightyChainOrder(
+    order: SnapshotStateList<CardTypeEnum>,
+    selectedNpSlots: List<Int>,
+    npTypes: List<CardTypeEnum>
 ) {
-    val cardTypes = listOf(CardTypeEnum.Buster, CardTypeEnum.Arts, CardTypeEnum.Quick)
-    val labels = listOf(
-        stringResource(R.string.p_chain_type_buster),
-        stringResource(R.string.p_chain_type_arts),
-        stringResource(R.string.p_chain_type_quick)
+    val labels = mapOf(
+        CardTypeEnum.Buster to stringResource(R.string.p_chain_type_buster),
+        CardTypeEnum.Arts to stringResource(R.string.p_chain_type_arts),
+        CardTypeEnum.Quick to stringResource(R.string.p_chain_type_quick)
     )
-    val colors = listOf(Color(0xFFC62828), Color(0xFF1565C0), Color(0xFF2E7D32))
     val npLabel = stringResource(R.string.p_mighty_chain_np)
 
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
-        Text(
-            text = stringResource(R.string.p_mighty_chain_turn, turn),
-            modifier = Modifier.padding(bottom = 6.dp)
-        )
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            cardTypes.forEachIndexed { index, cardType ->
-                val isNp = npSlots.any { slot ->
-                    types.getOrElse(slot) { CardTypeEnum.Unknown } == cardType
-                }
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(44.dp)
-                        .background(colors[index])
-                ) {
-                    Text(
-                        text = if (isNp) npLabel else labels[index],
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
+    DragSort(
+        items = order,
+        key = { it.name },
+        style = { cardType ->
+            val isNp = selectedNpSlots.any { slot ->
+                npTypes.getOrElse(slot) { CardTypeEnum.Unknown } == cardType
             }
-        }
-    }
+            DragSortItemStyle(
+                backgroundColor = colorResource(
+                    when (cardType) {
+                        CardTypeEnum.Buster -> R.color.colorBuster
+                        CardTypeEnum.Arts -> R.color.colorArts
+                        CardTypeEnum.Quick -> R.color.colorQuick
+                        CardTypeEnum.Unknown -> R.color.colorPrimaryDark
+                    }
+                ),
+                contentColor = Color.White,
+                text = if (isNp) npLabel else labels[cardType].orEmpty()
+            )
+        },
+        modifier = Modifier.fillMaxWidth()
+    )
+
+    Text(
+        stringResource(R.string.card_priority_hint_move_item),
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.padding(horizontal = 16.dp)
+    )
 }
