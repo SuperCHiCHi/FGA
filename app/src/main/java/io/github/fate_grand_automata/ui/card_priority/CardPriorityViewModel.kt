@@ -48,6 +48,8 @@ class CardPriorityViewModel @AssistedInject constructor(
     }
 
     val useServantPriority = battleConfig.useServantPriority
+    val useMightyChain = battleConfig.useMightyChain
+    val npCardTypes = battleConfig.npCardTypes
 
     fun save() {
         battleConfig.cardPriority.set(
