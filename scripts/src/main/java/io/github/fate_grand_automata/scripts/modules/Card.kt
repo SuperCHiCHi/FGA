@@ -3,12 +3,15 @@ package io.github.fate_grand_automata.scripts.modules
 import io.github.fate_grand_automata.scripts.IFgoAutomataApi
 import io.github.fate_grand_automata.scripts.ScriptLog
 import io.github.fate_grand_automata.scripts.enums.BraveChainEnum
+import io.github.fate_grand_automata.scripts.enums.CardTypeEnum
 import io.github.fate_grand_automata.scripts.models.CommandCard
 import io.github.fate_grand_automata.scripts.models.FieldSlot
 import io.github.fate_grand_automata.scripts.models.NPUsage
 import io.github.fate_grand_automata.scripts.models.ParsedCard
 import io.github.fate_grand_automata.scripts.models.SpamConfigPerTeamSlot
 import io.github.fate_grand_automata.scripts.models.battle.BattleState
+import io.github.fate_grand_automata.scripts.models.toFieldSlot
+import io.github.fate_grand_automata.scripts.modules.attack.MightyChainHandler
 import io.github.fate_grand_automata.scripts.prefs.IBattleConfig
 import io.github.lib_automata.dagger.ScriptScope
 import javax.inject.Inject
@@ -56,6 +59,57 @@ class Card @Inject constructor(
 
         val braveChainsPerWave = battleConfig.braveChains
         val rearrangeCardsPerWave = battleConfig.rearrangeCards
+
+        if (battleConfig.useMightyChain) {
+            val mightyNpUsage = NPUsage(npUsage.nps + spamNps, npUsage.cardsBeforeNP)
+            val npTypes = mightyNpUsage.nps.associate { np ->
+                val slot = np.toFieldSlot()
+                slot to battleConfig.npCardTypes.getOrElse(slot.position - 1) {
+                    CardTypeEnum.Unknown
+                }
+            }
+
+            val braveSlot = cardsOrderedByPriority
+                .mapNotNull { it.fieldSlot }
+                .distinct()
+                .firstOrNull { slot ->
+                    val npsForSlot = mightyNpUsage.nps.filter { it.toFieldSlot() == slot }
+                    val allNpsMatchSlot = npsForSlot.size == mightyNpUsage.nps.size
+                    val slotCards = cardsOrderedByPriority.filter { it.fieldSlot == slot }
+                    val types = slotCards.map { it.type } + npsForSlot.mapNotNull {
+                        npTypes[slot]?.takeUnless { type -> type == CardTypeEnum.Unknown }
+                    }
+
+                    allNpsMatchSlot &&
+                        slotCards.size + npsForSlot.size >= 3 &&
+                        types.toSet().containsAll(
+                            setOf(CardTypeEnum.Buster, CardTypeEnum.Arts, CardTypeEnum.Quick)
+                        )
+                }
+
+            val mightyBrave = braveSlot?.let { slot ->
+                MightyChainHandler.pick(
+                    cards = cardsOrderedByPriority,
+                    npUsage = mightyNpUsage,
+                    npTypes = npTypes,
+                    requiredFieldSlot = slot,
+                )
+            }
+            val mighty = mightyBrave ?: MightyChainHandler.pick(
+                cards = cardsOrderedByPriority,
+                npUsage = mightyNpUsage,
+                npTypes = npTypes,
+            )
+
+            if (mighty != null) {
+                return braveChains.pick(
+                    cards = mighty,
+                    npUsage = mightyNpUsage,
+                    braveChains = BraveChainEnum.None,
+                    rearrange = rearrangeCardsPerWave.inCurrentWave(false),
+                ).map { it.card }
+            }
+        }
 
         return braveChains.pick(
             cards = cardsOrderedByPriority,
