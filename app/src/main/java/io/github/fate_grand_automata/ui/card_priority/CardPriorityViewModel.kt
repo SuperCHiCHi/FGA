@@ -53,6 +53,8 @@ class CardPriorityViewModel @AssistedInject constructor(
     val useServantPriority = battleConfig.useServantPriority
     val useMightyChain = battleConfig.useMightyChain
     val npCardTypes = battleConfig.npCardTypes
+    val mightyChainOrders = battleConfig.mightyChainOrders.get()
+        .map { it.toMutableStateList() }
     val mightyChainTurns: List<List<Set<Int>>> = runCatching {
         AutoSkillCommand.parse(battleConfig.skillCommand.get()).stages.map { turns ->
             turns.map { actions ->
@@ -79,5 +81,6 @@ class CardPriorityViewModel @AssistedInject constructor(
 
         battleConfig.rearrangeCards.set(cardPriorityItems.map { it.rearrangeCards.value })
         battleConfig.braveChains.set(cardPriorityItems.map { it.braveChains.value })
+        battleConfig.mightyChainOrders.set(mightyChainOrders.map { it.toList() })
     }
 }
