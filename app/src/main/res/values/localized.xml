@@ -101,6 +101,8 @@ Skills"</string>
     <string name="p_mighty_chain_np_types">"NP colors for Mighty Chains"</string>
     <string name="p_mighty_chain_servant_np_type">"Servant %1$d NP color"</string>
     <string name="p_mighty_chain_np_type_unknown">"Not set"</string>
+    <string name="p_mighty_chain_np">"NP"</string>
+    <string name="p_mighty_chain_turn">"Turn %1$d"</string>
     <string name="p_chain_type_quick">"Quick"</string>
     <string name="p_chain_type_arts">"Arts"</string>
     <string name="p_chain_type_buster">"Buster"</string>
