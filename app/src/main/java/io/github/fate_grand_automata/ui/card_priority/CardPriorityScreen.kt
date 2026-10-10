@@ -12,7 +12,8 @@ fun CardPriorityScreen(
         items = vm.cardPriorityItems,
         useServantPriority = vm.useServantPriority,
         useMightyChain = vm.useMightyChain,
-        npCardTypes = vm.npCardTypes
+        npCardTypes = vm.npCardTypes,
+        mightyChainTurns = vm.mightyChainTurns
     )
 
     DisposableEffect(vm) {
