@@ -6,6 +6,7 @@ import androidx.core.content.edit
 import com.fredporciuncula.flow.preferences.Serializer
 import io.github.fate_grand_automata.prefs.import
 import io.github.fate_grand_automata.scripts.enums.BraveChainEnum
+import io.github.fate_grand_automata.scripts.enums.CardTypeEnum
 import io.github.fate_grand_automata.scripts.enums.GameServer
 import io.github.fate_grand_automata.scripts.enums.GameServers
 import io.github.fate_grand_automata.scripts.enums.MaterialEnum
@@ -99,6 +100,24 @@ class BattleConfigCore(
                     .joinToString(separator) { m -> m.toString() }
         },
         default = emptyList()
+    )
+
+    val useMightyChain = maker.bool("use_mighty_chain")
+
+    val npCardTypes = maker.serialized(
+        "mighty_chain_np_card_types",
+        serializer = object : Serializer<List<CardTypeEnum>> {
+            override fun deserialize(serialized: String) =
+                serialized.split(",").map {
+                    runCatching { enumValueOf<CardTypeEnum>(it) }
+                        .getOrDefault(CardTypeEnum.Unknown)
+                }.let { values -> List(3) { values.getOrElse(it) { CardTypeEnum.Unknown } } }
+
+            override fun serialize(value: List<CardTypeEnum>) =
+                List(3) { value.getOrElse(it) { CardTypeEnum.Unknown } }
+                    .joinToString(",") { it.name }
+        },
+        default = List(3) { CardTypeEnum.Unknown }
     )
 
     val shuffleCards = maker.enum("shuffle_cards", ShuffleCardsEnum.None)
