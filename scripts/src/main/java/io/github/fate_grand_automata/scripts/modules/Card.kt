@@ -62,6 +62,14 @@ class Card @Inject constructor(
 
         if (battleConfig.useMightyChain) {
             val mightyNpUsage = NPUsage(npUsage.nps + spamNps, npUsage.cardsBeforeNP)
+            val braveChain = braveChainsPerWave.inCurrentWave(BraveChainEnum.None)
+            val mightyOrder = battleConfig.mightyChainOrders
+                .inCurrentWave(
+                    listOf(CardTypeEnum.Buster, CardTypeEnum.Arts, CardTypeEnum.Quick)
+                )
+            val cardsOrderedForMighty = cardsOrderedByPriority.sortedBy { card ->
+                mightyOrder.indexOf(card.type).takeIf { it >= 0 } ?: Int.MAX_VALUE
+            }
             val npTypes = mightyNpUsage.nps.associate { np ->
                 val slot = np.toFieldSlot()
                 slot to battleConfig.npCardTypes.getOrElse(slot.position - 1) {
@@ -69,36 +77,12 @@ class Card @Inject constructor(
                 }
             }
 
-            val braveSlot = cardsOrderedByPriority
-                .mapNotNull { it.fieldSlot }
-                .distinct()
-                .firstOrNull { slot ->
-                    val npsForSlot = mightyNpUsage.nps.filter { it.toFieldSlot() == slot }
-                    val allNpsMatchSlot = npsForSlot.size == mightyNpUsage.nps.size
-                    val slotCards = cardsOrderedByPriority.filter { it.fieldSlot == slot }
-                    val types = slotCards.map { it.type } + npsForSlot.mapNotNull {
-                        npTypes[slot]?.takeUnless { type -> type == CardTypeEnum.Unknown }
-                    }
-
-                    allNpsMatchSlot &&
-                        slotCards.size + npsForSlot.size >= 3 &&
-                        types.toSet().containsAll(
-                            setOf(CardTypeEnum.Buster, CardTypeEnum.Arts, CardTypeEnum.Quick)
-                        )
-                }
-
-            val mightyBrave = braveSlot?.let { slot ->
-                MightyChainHandler.pick(
-                    cards = cardsOrderedByPriority,
-                    npUsage = mightyNpUsage,
-                    npTypes = npTypes,
-                    requiredFieldSlot = slot,
-                )
-            }
-            val mighty = mightyBrave ?: MightyChainHandler.pick(
-                cards = cardsOrderedByPriority,
+            val mighty = MightyChainHandler.pick(
+                cards = cardsOrderedForMighty,
                 npUsage = mightyNpUsage,
                 npTypes = npTypes,
+                braveChainEnum = braveChain,
+                forceBraveChain = braveChain == BraveChainEnum.Always,
             )
 
             if (mighty != null) {
