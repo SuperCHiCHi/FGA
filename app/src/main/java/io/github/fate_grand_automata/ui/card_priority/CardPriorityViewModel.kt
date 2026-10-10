@@ -17,6 +17,11 @@ import io.github.fate_grand_automata.scripts.models.CardPriorityPerWave
 import io.github.fate_grand_automata.scripts.models.CommandCard
 import io.github.fate_grand_automata.scripts.models.ServantPriorityPerWave
 
+data class MightyChainAttack(
+    val npSlots: List<Int>,
+    val cardsBeforeNp: Int,
+)
+
 @HiltViewModel(assistedFactory = CardPriorityViewModel.Factory::class)
 class CardPriorityViewModel @AssistedInject constructor(
     prefsCore: PrefsCore,
@@ -55,13 +60,19 @@ class CardPriorityViewModel @AssistedInject constructor(
     val npCardTypes = battleConfig.npCardTypes
     val mightyChainOrders = battleConfig.mightyChainOrders.get()
         .map { it.toMutableStateList() }
-    val mightyChainTurns: List<List<Set<Int>>> = runCatching {
+    val mightyChainTurns: List<List<MightyChainAttack>> = runCatching {
         AutoSkillCommand.parse(battleConfig.skillCommand.get()).stages.map { turns ->
-            turns.map { actions ->
+            turns.mapNotNull { actions ->
                 actions.filterIsInstance<AutoSkillAction.Atk>()
-                    .flatMap { it.nps }
-                    .mapNotNull { CommandCard.NP.list.indexOf(it).takeIf { index -> index >= 0 } }
-                    .toSet()
+                    .firstOrNull { it.nps.isNotEmpty() }
+                    ?.let { attack ->
+                        MightyChainAttack(
+                            npSlots = attack.nps.mapNotNull {
+                                CommandCard.NP.list.indexOf(it).takeIf { index -> index >= 0 }
+                            },
+                            cardsBeforeNp = attack.cardsBeforeNP,
+                        )
+                    }
             }
         }
     }.getOrDefault(emptyList())

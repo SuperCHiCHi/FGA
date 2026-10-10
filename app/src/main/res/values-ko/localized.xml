@@ -525,6 +525,8 @@
     <string name="p_mighty_chain_servant_np">서번트 %1$d 보구</string>
     <string name="p_mighty_chain_np_type_unknown">미지정 (기존 방식)</string>
     <string name="p_mighty_chain_np">보구</string>
+    <string name="p_mighty_chain_card">카드</string>
+    <string name="p_mighty_chain_same_np_type_unavailable">동일 타입 보구로 마이티 체인 불가</string>
     <string name="p_mighty_chain_turn">%1$d턴</string>
     <string name="p_chain_type_quick">퀵</string>
     <string name="p_chain_type_arts">아츠</string>
