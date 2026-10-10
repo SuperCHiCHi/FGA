@@ -71,6 +71,7 @@ object AttackUtils {
      * BraveChainEnum.None -> Does not return a fieldSlot, since BraveChains are not forced.
      * BraveChainEnum.Avoid -> Does not return a fieldSlot, since BraveChains are avoided.
      * BraveChainEnum.WithNP -> Returns a field slot if there is 1 NP with a valid BraveChain.
+     * BraveChainEnum.Always -> Always returns a field slot if there is a valid one.
      * @param cards The list of cards available to choose from
      * @param npUsage NPs that have been clicked
      * @returns A valid FieldSlot for a BraveChain or null if there is none
@@ -91,6 +92,9 @@ object AttackUtils {
             val fieldSlot = firstNp?.toFieldSlot()
             // Only return the field slot if it is valid for a Brave Chain
             if (cards.filter { it.fieldSlot == fieldSlot }.size >= 2) return fieldSlot
+        } else if (braveChainEnum == BraveChainEnum.Always) {
+            val braveChainCapableFieldSlots = getFieldSlotsWithValidBraveChain(cards, npUsage)
+            return cards.firstOrNull { it.fieldSlot in braveChainCapableFieldSlots }?.fieldSlot
         }
         return null
     }
