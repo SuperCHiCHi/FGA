@@ -518,4 +518,11 @@
     <string name="ce_name_report_check">리포트 체크</string>
     <string name="ce_name_secret_mission">시크릿 미션</string>
     <string name="ce_name_wings_of_manuscript">수고의 날개</string>
+    <string name="p_battle_config_use_mighty_chain">마이티 체인 우선</string>
+    <string name="p_mighty_chain_np_types">마이티 체인용 보구 색</string>
+    <string name="p_mighty_chain_servant_np_type">서번트 %1$d 보구 색</string>
+    <string name="p_mighty_chain_np_type_unknown">지정 안 함</string>
+    <string name="p_chain_type_quick">퀵</string>
+    <string name="p_chain_type_arts">아츠</string>
+    <string name="p_chain_type_buster">버스터</string>
 </resources>
