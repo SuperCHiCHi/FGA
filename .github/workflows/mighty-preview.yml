@@ -13,6 +13,9 @@ concurrency:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    env:
+      FGA_VERSION_CODE: 3067
+      FGA_VERSION_NAME: 3.0.67-card-sequence-append-score-preview
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
